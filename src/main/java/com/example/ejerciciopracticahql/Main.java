@@ -1,16 +1,23 @@
 package com.example.ejerciciopracticahql;
 
-import jakarta.persistence.NamedQuery;
+
 import jakarta.persistence.TypedQuery;
 import org.hibernate.Transaction;
+import org.hibernate.query.Query;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
+import java.util.logging.LogManager;
+import java.util.logging.Logger;
 
 public class Main {
     public static void main(String[] args) {
 
+        /**
+         * Codigo para deshabilitar los warnings de hibernate
+         */
+        LogManager.getLogManager().reset();
+        Logger globalLogger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
+        globalLogger.setLevel(java.util.logging.Level.OFF);
 
         try {
             Conexiones.setUp();
@@ -39,7 +46,12 @@ public class Main {
     }
 
 
-
+    /**
+     * Método para insertar en la base de datos
+     * @param nombre
+     * @param apellido1
+     * @param apellido2
+     */
     private static void insertarProfesor(String nombre, String apellido1, String apellido2 ) {
 
 
@@ -50,7 +62,6 @@ public class Main {
         System.out.println(id);
 
     }
-
 
     private static void insertarAlumno(String nombre, String apellido1, String apellido2 ) {
 
@@ -64,12 +75,33 @@ public class Main {
     }
 
 
-    //    Consulta genérica
+    /**
+     * Método para listar de forma genérica, se cambia el tipo de List y la sentencia HQL o bien
+     * el NamedQuery
+     */
     public static void listar() {
 
-
+        /* Ejemplo NamedQuery*/
         List <tProfesoresHQL> lista = listarNamedQueries("listaProfesores");
 
+
+        /* Ejemplo select nombre en NamedQuery
+            List <tAlumnosHQL> lista = listarNamedQueries("listaNombreAlumnos");
+        */
+
+        /* Ejemplo de consulta
+        List <tAlumnosHQL> lista = Conexiones.session.createQuery("from tAlumnosHQL WHERE ").getResultList();
+         */
+
+        /* Listado usando un parámetro, primero se le pasa el nombre de la NamedQuery, luego el nombre
+        del parámetro puesto en la clase, en este caso apellido,y por último será el valora buscar
+
+        List <tAlumnosHQL> lista = listarConParametro("listaAlumnosPorApellido","apellido","Muletas");
+          */
+        /* Ejemplo de namedQuert que devuelve un unique valor
+        List <tAlumnosHQL> lista = listarNamedQueries("numeroAlumnado");
+           System.out.println( resultado("numeroAlumnado"));
+        */
 
         for(int i =0; i< lista.size();i++){
 
@@ -78,9 +110,46 @@ public class Main {
     }
 
 
-    //    Consulta genérica
+    /**
+     * Método que se necestia para listar, recibe como parámetro los NamedQuery creados
+     * en las clases
+     * @param namedQuery
+     * @return
+     */
     public static List listarNamedQueries(String namedQuery) {
         TypedQuery lista = Conexiones.session.getNamedQuery(namedQuery);
         return lista.getResultList();
+    }
+
+
+    /**
+     * Método que recibe el nombre de la Namedquery, del parámetro que hayamos puesto en la clase,
+     * y del valora buscar
+     * @param namedQuery
+     * @param param
+     * @param valor
+     * @return
+     */
+    public static List listarConParametro(String namedQuery,String param, String valor) {
+        TypedQuery lista = Conexiones.session.getNamedQuery(namedQuery).setParameter(param,valor);
+        return lista.getResultList();
+    }
+
+    /**
+     * Método que devuelve el valor de las consultas de agregación, pueden ser:
+     * avg(...)
+     * sum(...)
+     * min(...)
+     * max(...)
+     * count(*), count(...), count(distinct ...), count(all...)
+     * @param namedQuery
+     * @return
+     */
+    public static long resultado(String namedQuery) {
+
+        Query lista = Conexiones.session.getNamedQuery(namedQuery);
+
+        // Para el uso del uniqueResult se importa import org.hibernate.query.Query;
+        return (long)lista.uniqueResult();
     }
 }

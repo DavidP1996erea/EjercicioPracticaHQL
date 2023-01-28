@@ -5,7 +5,13 @@ import jakarta.persistence.*;
 @Entity
 @Table(name = "Alumnos")
 @NamedQueries({
-        @NamedQuery(name="listaAlumnos", query="from tAlumnosHQL ")})
+        @NamedQuery(name="listaAlumnos", query="from tAlumnosHQL "),
+        @NamedQuery(name="listaNombreAlumnos", query="select a.nombre from tAlumnosHQL a"),
+        @NamedQuery(name="listaAlumnosPorApellido", query="select a from tAlumnosHQL a where a.apellido1 LIKE :apellido"),
+        @NamedQuery(name = "numeroAlumnado", query = "select count(a) from tAlumnosHQL a")
+
+
+})
 public class tAlumnosHQL {
 
     @Id
